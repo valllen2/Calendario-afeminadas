@@ -36,16 +36,16 @@
     <div class="controls">
         <div class="user-row">
             <select id="userSelect" onchange="updateCurrentUser()">
-                <option value="user1">💜 Sara</option>
-                <option value="user2">💖 Valen</option>
-                <option value="user3">💛 Amanda</option>
-                <option value="user4">🌿 Maria</option>
-                <option value="user5">💙 Julia</option>
+                <option value="user1">Sara</option>
+                <option value="user2">Valen</option>
+                <option value="user3">Amanda</option>
+                <option value="user4">Maria</option>
+                <option value="user5">Julia</option>
             </select>
         </div>
         <div class="button-row">
-            <button class="btn-save" onclick="salvarDados(true)">💾 Salvar</button>
-            <button class="btn-clear" onclick="confirmarLimpeza()">🗑️ Limpar Tudo</button>
+            <button class="btn-save" onclick="salvarDados(true)">Salvar</button>
+            <button class="btn-clear" onclick="confirmarLimpeza()">Limpar Tudo</button>
         </div>
     </div>
     <div class="calendar-grid" id="calendar"></div>
@@ -73,6 +73,7 @@
         for (let i = 1; i <= 31; i++) {
             const dayTile = document.createElement('div');
             dayTile.className = 'day-tile';
+            
             const taskList = document.createElement('div');
             if (db[i]) {
                 db[i].forEach((task, index) => {
@@ -83,25 +84,45 @@
                     taskList.appendChild(item);
                 });
             }
+            
             dayTile.innerHTML = `<span class="day-number">${i}</span>`;
             dayTile.appendChild(taskList);
+
+            // Criar um container para o input e o botão ficarem lado a lado
+            const inputGroup = document.createElement('div');
+            inputGroup.style.display = 'flex';
+            inputGroup.style.gap = '2px';
+            inputGroup.style.marginTop = 'auto';
 
             const input = document.createElement('input');
             input.type = 'text';
             input.placeholder = 'Add...';
-            input.onkeydown = (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (input.value !== '') {
-                        if (!db[i]) db[i] = [];
-                        db[i].push({ userId: currentUser, text: input.value });
-                        salvarDados(false);
-                        input.value = '';
-                        input.blur();
-                    }
+            input.style.flex = '1';
+            
+            // Botão de Adicionar para não depender do Enter do teclado
+            const addBtn = document.createElement('button');
+            addBtn.innerText = '+';
+            addBtn.style.padding = '4px 8px';
+            addBtn.style.background = '#800080';
+            addBtn.style.borderRadius = '5px';
+            addBtn.style.fontSize = '14px';
+
+            const acaoSalvar = () => {
+                if (input.value !== '') {
+                    if (!db[i]) db[i] = [];
+                    db[i].push({ userId: currentUser, text: input.value });
+                    salvarDados(false);
+                    input.value = '';
+                    input.blur(); // Fecha o teclado
                 }
             };
-            dayTile.appendChild(input);
+
+            addBtn.onclick = acaoSalvar;
+            input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); acaoSalvar(); } };
+
+            inputGroup.appendChild(input);
+            inputGroup.appendChild(addBtn);
+            dayTile.appendChild(inputGroup);
             calendar.appendChild(dayTile);
         }
     }
