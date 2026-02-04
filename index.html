@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendarioafeminadinhas</title>
+    <style>
+        :root {
+            --bg-rosa: #fff0f5; 
+            --magenta: #FF00FF;
+            --roxo: #800080;
+            --verde-musgo: #556B2F;
+            --azul-marinho: #000080;
+            --amarelo: #b8860b; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: var(--bg-rosa); 
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 { color: #555; margin: 15px 0; font-size: 1.4rem; }
+
+        .controls {
+            width: 100%; max-width: 600px; background: white; padding: 15px;
+            border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .user-row { display: flex; gap: 10px; }
+        select { flex-grow: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
+
+        .button-row { display: flex; gap: 10px; width: 100%; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; }
+
+        .btn-save { background-color: #773577; }
+        .btn-clear { background-color: #e74c3c; }
+
+        .calendar-grid { 
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; max-width: 800px;
+        }
+
+        @media (min-width: 600px) { .calendar-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (min-width: 900px) { .calendar-grid { grid-template-columns: repeat(7, 1fr); } }
+
+        .day-tile { 
+            background: white; border-radius: 12px; padding: 10px; min-height: 130px;
+            display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .day-number { font-size: 14px; font-weight: bold; color: #ccc; margin-bottom: 5px; }
+
+        /* Estilo da Task com botão de apagar */
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            gap: 4px;
+        }
+
+        .task-text { 
+            font-size: 11px; font-weight: bold; line-height: 1.2; word-break: break-word;
+        }
+
+        .btn-delete {
+            color: #ff4d4d;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0 4px;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        input[type="text"] {
+            width: 100%; border: none; border-top: 1px solid #f9f9f9;
+            padding-top: 5px; margin-top: auto; font-size: 12px; outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📅 Calendário afminadas</h2>
+
+    <div class="controls">
+        <div class="user-row">
+            <select id="userSelect" onchange="updateCurrentUser()">
+                <option value="user1">Sara</option>
+                <option value="user2">Valen</option>
+                <option value="user3">Amanda</option>
+                <option value="user4">Maria</option>
+                <option value="user5">Julia</option>
+            </select>
+        </div>
+        <div class="button-row">
+            <button class="btn-save" onclick="salvarDados()"> Salvar Alterações</button>
+            <button class="btn-clear" onclick="confirmarLimpeza()"> Limpar Tudo</button>
+        </div>
+    </div>
+
+    <div class="calendar-grid" id="calendar"></div>
+
+<script>
+    const USERS = {
+        user1: { color: "var(--roxo)" },
+        user2: { color: "var(--magenta)" },
+        user3: { color: "var(--amarelo)" },
+        user4: { color: "var(--verde-musgo)" },
+        user5: { color: "var(--azul-marinho)" }
+    };
+
+    let currentUser = "user1";
+    let db = JSON.parse(localStorage.getItem('agenda_clube_5')) || {};
+
+    function updateCurrentUser() {
+        currentUser = document.getElementById('userSelect').value;
+    }
+
+    function renderCalendar() {
+        const calendar = document.getElementById('calendar');
+        calendar.innerHTML = '';
+
+        for (let i = 1; i <= 31; i++) {
+            const dayTile = document.createElement('div');
+            dayTile.className = 'day-tile';
+            
+            const taskList = document.createElement('div');
+            if (db[i]) {
+                db[i].forEach((task, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'task-item';
+                    item.innerHTML = `
+                        <span class="task-text" style="color: ${USERS[task.userId].color}">• ${task.text}</span>
+                        <span class="btn-delete" onclick="apagarTarefa(${i}, ${index})">×</span>
+                    `;
+                    taskList.appendChild(item);
+                });
+            }
+
+            dayTile.innerHTML = `<span class="day-number">${i}</span>`;
+            dayTile.appendChild(taskList);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Escrever...';
+            input.onkeypress = (e) => {
+                if (e.key === 'Enter' && e.target.value !== '') {
+                    if (!db[i]) db[i] = [];
+                    db[i].push({ userId: currentUser, text: e.target.value });
+                    renderCalendar();
+                }
+            };
+
+            dayTile.appendChild(input);
+            calendar.appendChild(dayTile);
+        }
+    }
+
+    function apagarTarefa(dia, index) {
+        // 1. Remove o item da lista na memória do computador
+        db[dia].splice(index, 1); 
+        
+        // 2. SALVA a nova lista (sem o item) no celular/navegador na hora
+        localStorage.setItem('agenda_clube_5', JSON.stringify(db));
+        
+        // 3. Atualiza o desenho do calendário na tela
+        renderCalendar(); 
+    }
+
+    function salvarDados() {
+        localStorage.setItem('agenda_clube_5', JSON.stringify(db));
+        alert("✅ Salvo com sucesso!");
+    }
+
+    function confirmarLimpeza() {
+        if (confirm("Apagar tudo do mês?")) {
+            db = {};
+            localStorage.removeItem('agenda_clube_5');
+            renderCalendar();
+        }
+    }
+
+    renderCalendar();
+</script>
+</body>
+</html>
