@@ -85,7 +85,7 @@
         currentUser = document.getElementById('userSelect').value;
     }
 
-    // 🌐 ESCUTA EM TEMPO REAL: Quando alguém escreve, o seu atualiza sozinho!
+    
     database.ref('agenda').on('value', (snapshot) => {
         db = snapshot.val() || {};
         renderCalendar();
