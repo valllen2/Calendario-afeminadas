@@ -54,7 +54,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <script>
-    // Configuração que você pegou na imagem
     const firebaseConfig = {
         apiKey: "AIzaSyAn7oCDgoTPNlcB21z3WjeTnuUwk7uINOU",
         authDomain: "calendario-afeminadas.firebaseapp.com",
@@ -66,7 +65,9 @@
         measurementId: "G-DZ3ZTTK2XG"
     };
 
-    // Inicializa o Firebase
+
+
+    
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
@@ -78,6 +79,8 @@
         user5: { color: "var(--azul-marinho)" }
     };
 
+
+    
     let currentUser = "user1";
     let db = {}; 
 
@@ -123,14 +126,14 @@
             const addBtn = document.createElement('button');
             addBtn.innerText = '+';
             addBtn.style.padding = '4px 8px';
-            addBtn.style.background = '#2ecc71'; // COR DO BOTÃO + AQUI
+            addBtn.style.background = '#2ecc71';
             addBtn.style.borderRadius = '5px';
 
             const acaoSalvar = () => {
                 if (input.value !== '') {
                     if (!db[i]) db[i] = [];
                     db[i].push({ userId: currentUser, text: input.value });
-                    database.ref('agenda').set(db); // Salva no Google
+                    database.ref('agenda').set(db); 
                     input.value = '';
                     input.blur();
                 }
@@ -148,7 +151,7 @@
 
     function apagarTarefa(dia, index) {
         db[dia].splice(index, 1);
-        database.ref('agenda').set(db); // Atualiza no Google
+        database.ref('agenda').set(db);
     }
 
     function salvarDados(comAlerta) {
